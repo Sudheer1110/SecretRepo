@@ -1,0 +1,49 @@
+/* Custom styling for radio buttons */
+.custom-radio .custom-control-label::before {
+    background-color: #007bff;
+    border-color: #007bff;
+}
+
+.custom-radio .custom-control-input:checked~.custom-control-label::before {
+    background-color: #0056b3;
+    border-color: #0056b3;
+}
+
+/* Centering radio buttons */
+.centered {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Centering the container */
+.centered-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    -ms-transform: translate(-50%, -50%);
+    -webkit-transform: translate(-50%, -50%);
+}
+
+/* Styling for messages */
+#messages {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+}
+
+/* Success message */
+#messages.success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+/* Error message */
+#messages.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
