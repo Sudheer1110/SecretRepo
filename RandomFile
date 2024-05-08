@@ -1,0 +1,238 @@
+let mycart;
+
+function loadFun(){
+    let mc = document.getElementById("counter");
+    let count = 0;
+    function updateCounter() {
+        if (count <= 200000) {
+            mc.innerText = count;
+            count++;
+            setTimeout(updateCounter, 1); // Update every 1 millisecond
+        }
+    }
+    
+    updateCounter();
+
+    mycart=document.getElementById("my_cart_button_id");
+    
+    mycart.onclick=function(){
+        viewCart();
+    }
+    mycart.ondblclick=function(){
+        let citems=document.getElementById("cart_parent");
+        citems.innerHTML="";
+    }
+
+    // document.getElementById("cartButton").innerText="My Cart ("+localStorage.length+")";
+    document.getElementById("cartButton").style.color="#40C0E7";
+
+}
+
+function addToCart(prodKey){
+    if(localStorage[prodKey]==null){
+        localStorage[prodKey]=1;
+    }
+    else{
+        let currQuantity=localStorage[prodKey];
+        localStorage[prodKey]=parseInt(currQuantity)+1;
+    }  
+}
+
+function viewCart(){
+    let cparent=document.getElementById("cart_parent");
+    // let citems=document.getElementById("cartItems");
+
+    let tempobj,tempimg,tempdesc,tempprice,pricedetails={};
+    // pricedetails{id:total_price}
+
+    if(document.getElementById("cart_parent")!=null){
+        document.getElementById("cart_parent").innerHTML="";
+    }
+
+    let cart_card_desc=document.createElement("div");
+    cart_card_desc.appendChild(document.createTextNode("--YOUR CART--"));
+    cparent.appendChild(cart_card_desc);
+
+    let citems=document.createElement("div");
+    citems.setAttribute("class","citems");
+    citems.setAttribute("id","cartItems");
+    cparent.appendChild(citems);
+    
+
+    if(localStorage.length==0){
+        console.log("cart is empty");
+        return;
+    }
+    let total_price=0;
+    // localstorage { item:quantity}
+    // document.getElementById("cartItems").style.display=block;
+
+    for(let i=0;i<localStorage.length;i++){
+        tempdiv=document.createElement("div");
+        tempdiv.setAttribute("class","cart_item");
+
+        descdiv=document.createElement("div");
+        descdiv.setAttribute("class","cart_item_desc");
+
+        quandiv=document.createElement("div");
+        quandiv.setAttribute("class","cart_item_quantity");
+
+        butdiv=document.createElement("div");
+        butdiv.setAttribute("class","cart_item_buttons");
+
+        if(document.getElementById(localStorage.key(i))==null)
+        {
+            continue;
+        }
+        tempobj=document.getElementById(localStorage.key(i)).cloneNode(true);
+        
+        tempimg=tempobj.children[0];
+        
+        tempobj.setAttribute("id",localStorage.key(i)+"_cartItem");
+
+        tempdesc=tempobj.children[1];
+        tempprice=tempobj.children[2];
+
+        descdiv.appendChild(tempdesc);
+        descdiv.appendChild(tempprice);
+
+        tempdiv.appendChild(tempimg);
+        tempdiv.appendChild(descdiv);
+
+        let rembut=document.createElement("button");
+        rembut.setAttribute("class","pro_button");
+        let remtext=document.createTextNode("-");
+        rembut.appendChild(remtext);
+
+        quandiv=document.createElement("div");
+        let q=document.createTextNode(localStorage[localStorage.key(i)]);
+
+        let currprice=parseInt(localStorage[localStorage.key(i)])*parseInt(tempprice.children[1].innerText.replace(",",""));
+        pricedetails[tempdesc.innerText]=currprice;
+        total_price+=currprice;
+
+        quandiv.appendChild(q);
+
+        let addbut=document.createElement("button");
+        addbut.setAttribute("class","pro_button");
+        let addtext=document.createTextNode("+");
+        addbut.appendChild(addtext);
+
+        butdiv.appendChild(rembut);
+        butdiv.appendChild(quandiv);
+        butdiv.appendChild(addbut);
+
+        tempdiv.appendChild(butdiv);
+
+        citems.appendChild(tempdiv);
+    }
+    // console.log(pricedetails);
+    console.log(total_price);   
+
+    let price_summary=document.createElement("div");
+    price_summary.setAttribute("class","priceSummary");
+
+    for(let i of Object.keys(pricedetails)){
+        let currPriceItem=document.createElement("div");
+        currPriceItem.setAttribute("class","price_item");
+
+        let item_desc=document.createElement("p");
+        item_desc.appendChild(document.createTextNode(i));
+        currPriceItem.appendChild(item_desc);
+
+        let item_price=document.createElement("p");
+        item_price.appendChild(document.createTextNode(pricedetails[i]));
+        currPriceItem.appendChild(item_price);
+
+        price_summary.appendChild(currPriceItem);
+    }
+    cparent.appendChild(price_summary);
+
+    let pay_button=document.createElement("button");
+    pay_button.setAttribute("onclick","make_payment()");
+    pay_button.appendChild(document.createTextNode("Proceed to checckout"));
+    cparent.appendChild(pay_button);
+    
+    console.log("create_table_man");
+}
+
+
+function create_order(){
+    // amt_val is hard coded remove it later
+    let pass_data={};
+    pass_data["amount"]=100*100;
+    pass_data["currency"]="INR";
+    pass_data["receipt"]="Receipt_Shopping_Simulation_01111";
+
+    let xhr=new XMLHttpRequest();
+    xhr.responseType='json';
+
+    xhr.onreadystatechange=function(){
+        if(xhr.readyState==4 && xhr.status==200){
+            let result=JSON.parse(xhr.responseText);
+            console.log(result);
+            console.log(result.order_id);
+        }
+    }
+    
+    var key="rzp_test_2S63eu1Gpm3bW4";
+    var secret="6ernIvKmyWdJUvQCO8UFVcDX";
+
+    xhr.open("POST","https://api.razorpay.com/v1/orders",[true,key,secret]);
+    // xhr.setRequestHeader("Authorization", "Basic " + btoa(key + ":" + secret));
+    xhr.send(pass_data);
+
+    make_payment(100);
+    // make_payment(amt_val)
+}
+
+
+function make_payment(){
+    var options = {
+        "key": "rzp_test_2S63eu1Gpm3bW4",
+        "amount": 100*100,
+        "currency": "INR",
+        "name": "Shopping Simulation",
+        "description": "Order Purchase",
+        "image": "https://www.svgrepo.com/show/396909/letter-s.svg",
+        "order_id": "order_NtGRCSBYVxSz8N",
+        "handler": function (response) {
+            // alert(response.razorpay_payment_id);
+            // alert(response.razorpay_order_id);
+            // alert(response.razorpay_signature);
+            alert("Congratulations Your payment is successful !");
+        },
+        "prefill": { 
+            // ask these details too
+            "name": "Gaurav Kumar", 
+            "email": "gaurav.kumar@example.com",
+            "contact": "9000090000"
+        },
+        "notes": {
+            "address": "Shopping Simulation, Visakhapatnam"
+        },
+        "theme": {
+            "color": "#40C0E7"
+        }
+    };
+
+    var razor_object = new Razorpay(options);
+
+    razor_object.on('payment.failed', function (response) {
+        console.log(response.error.code);
+        console.log(response.error.description);
+        console.log(response.error.source);
+        console.log(response.error.step);
+        console.log(response.error.reason);
+        console.log(response.error.metadata.order_id);
+        console.log(response.error.metadata.payment_id);
+        alert("Payment Failed due to some reason try again");
+    });
+    
+    open_razor_object(razor_object);
+
+}
+
+function open_razor_object(razor_object){
+    razor_object.open();
+}
